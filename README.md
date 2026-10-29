@@ -108,6 +108,36 @@ cargo run --release -p horizon-client
 
 Everything prepared lands in the gitignored `.local/`. It is derived from the game: never commit it or share it.
 
+On Linux, `./play-installed.sh` automates this source-build setup using Minecraft files
+already installed by your launcher, including sounds. It finds standard game folders
+(including TLauncher's `~/.minecraft`), ATLauncher, CurseForge, and compatible Prism,
+MultiMC, Modrinth and GDLauncher layouts, including Flatpak locations. It checks the client
+JAR and original version JSON against `research-lock.json`, links the existing files into
+`.local/installed-minecraft/`, builds Horizon, prepares resources, and starts the game.
+Launchers that rewrite Mojang's version JSON need an original matching JSON already on
+disk (or cached by an earlier Horizon preparation). The script never downloads Minecraft
+files or modifies your launcher's installation. If release 26.3 is missing or incomplete,
+it asks you to install and launch that release in your client first.
+
+```sh
+./play-installed.sh --check                 # inspect installed files without changing anything
+./play-installed.sh --server-jar ~/Downloads/server.jar
+# Custom launcher location; arguments after -- go to the Rust game:
+./play-installed.sh --minecraft-dir '/path/to/game' --server-jar /path/to/server.jar -- --render-distance 8
+```
+
+Missing build dependencies are installed with `pacman` (Arch and derivatives), `apt`
+(Debian/Ubuntu and derivatives), `dnf` (Fedora/RHEL family), or `zypper` (openSUSE).
+The package manager may ask for sudo and package confirmation. Rust is installed with
+rustup when missing or too old; a missing JDK 25 is downloaded from Eclipse Temurin,
+checked against its SHA-256, and kept in `.local/`. Cargo also downloads build dependencies.
+Existing tools are reused. Other Linux distributions can run the script after installing
+the dependencies listed by `--help`/the error message manually. Use `--no-install` to
+disable dependency installation, or `--prepare-only` to finish setup without opening a window.
+The separate matching server JAR is still required for preparation: use `--server-jar`
+or `HORIZON_SERVER_JAR`; the script also checks the checkout's `.local/` and common
+server JAR names in `~/Downloads`. An installed Java client alone does not contain that JAR.
+
 The client starts on the title screen. Command-line options (`--world`, `--seed`, `--creative`, `--render-distance`, `--dedicated`), controls, scripting through `horizon-ctl` and the architecture are described in [the native client guide](docs/native-client.md). The rest of the developer documentation is indexed in [docs/README.md](docs/README.md), including [the parity workflow](docs/parity-workflow.md).
 
 ## Roadmap
